@@ -17,6 +17,7 @@ use MosparoIntegration\Module\MemberpressAccount\MemberpressAccountModule;
 use MosparoIntegration\Module\NinjaForms\NinjaFormsModule;
 use MosparoIntegration\Module\WPForms\WPFormsModule;
 use MosparoIntegration\Module\WooCommerceAccount\WooCommerceAccountModule;
+use MosparoIntegration\Module\PaidMembershipsPro\PaidMembershipsProModule; // Add this line
 
 class ModuleHelper
 {
@@ -36,6 +37,7 @@ class ModuleHelper
         NinjaFormsModule::class,
         WooCommerceAccountModule::class,
         WPFormsModule::class,
+        PaidMembershipsProModule::class, // Add this line
     ];
     protected $activeModules = [];
 
@@ -116,5 +118,4 @@ class ModuleHelper
     {
         return apply_filters('mosparo_integration_filter_available_modules', self::$availableModules);
     }
-    
 }
