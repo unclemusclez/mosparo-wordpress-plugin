@@ -4,13 +4,20 @@ namespace MosparoIntegration\ModuleForm;
 
 use MosparoIntegration\Helper\VerificationHelper;
 
-class CheckoutForm extends AbstractForm // Correct class name
+class CheckoutForm
 {
+    protected $module;
+
+    public function __construct($module)
+    {
+        $this->module = $module;
+    }
+
     public function displayMosparoField()
     {
-        $this->loadResources();
+        $this->module->loadResources();
 
-        $connection = $this->getConnection();
+        $connection = $this->module->getConnection();
         if (!$connection) {
             return;
         }
@@ -42,7 +49,7 @@ class CheckoutForm extends AbstractForm // Correct class name
             return $continue;
         }
 
-        $connection = $this->getConnection();
+        $connection = $this->module->getConnection();
         if (!$connection || empty($_POST['mosparo_token'])) {
             pmpro_setMessage(__('Spam protection failed. Please try again.', 'mosparo-integration'), 'pmpro_error');
             return false;
