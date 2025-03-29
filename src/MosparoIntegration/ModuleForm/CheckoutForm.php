@@ -2,60 +2,60 @@
 
 namespace MosparoIntegration\ModuleForm;
 
-use MosparoIntegration\Helper\ConfigHelper;
 use MosparoIntegration\Helper\VerificationHelper;
-use WP_Error;
 
-/**
- * Account register form for the WordPress and WooCommerce register forms.
- */
-class AccountRegisterForm extends AbstractAccountForm
+class CheckoutForm extends AbstractForm // Correct class name
 {
-    public function verifyRegisterForm(WP_Error $errors)
+    public function displayMosparoField()
     {
-        if ($errors->has_errors() || !$this->canProcessRequest('woocommerce-register-nonce')) {
-            return $errors;
+        $this->loadResources();
+
+        $connection = $this->getConnection();
+        if (!$connection) {
+            return;
         }
 
-        $connection = ConfigHelper::getInstance()->getConnectionFor($this->module->getDefaultKey(), true);
-        if ($connection === false) {
-            $errors->add(
-                'mosparo_integration_general_error',
-                __('A general error occurred: no available connection', 'mosparo-integration')
-            );
+        $host = $connection->getHost();
+        $uuid = $connection->getUuid();
+        $publicKey = $connection->getPublicKey();
 
-            return $errors;
+        ?>
+        <script type="text/javascript" src="<?php echo esc_url($host . '/mosparo.js'); ?>" async></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                new mosparo('mosparo-box', '<?php echo esc_js($uuid); ?>', '<?php echo esc_js($publicKey); ?>', {
+                    loadCssResource: true,
+                    onSuccess: function(token) {
+                        document.getElementById('mosparo_token').value = token;
+                    }
+                });
+            });
+        </script>
+        <div id="mosparo-box"></div>
+        <input type="hidden" id="mosparo_token" name="mosparo_token" value="" />
+        <?php
+    }
+
+    public function verifyCheckoutForm($continue)
+    {
+        if (!$continue || is_user_logged_in()) {
+            return $continue;
         }
 
-        $submitToken = trim(sanitize_text_field($_POST['_mosparo_submitToken'] ?? ''));
-        $validationToken = trim(sanitize_text_field($_POST['_mosparo_validationToken'] ?? ''));
-
-        $formData = apply_filters('mosparo_integration_' . $this->module->getKey() . '_register_form_data', [
-            'user_login' => sanitize_user($_POST['user_login'] ?? ''),
-            'user_email' => sanitize_email($_POST['user_email'] ?? ''),
-        ]);
+        $connection = $this->getConnection();
+        if (!$connection || empty($_POST['mosparo_token'])) {
+            pmpro_setMessage(__('Spam protection failed. Please try again.', 'mosparo-integration'), 'pmpro_error');
+            return false;
+        }
 
         $verificationHelper = VerificationHelper::getInstance();
-        $verificationResult = $verificationHelper->verifySubmission($connection, $submitToken, $validationToken, $formData);
-        if ($verificationResult === null) {
-            $errors->add(
-                'mosparo_integration_general_error',
-                sprintf(__('A general error occurred: %s', 'mosparo-integration'), $verificationHelper->getLastException()->getMessage())
-            );
+        $result = $verificationHelper->verifySubmission(sanitize_text_field($_POST['mosparo_token']));
 
-            return $errors;
+        if (!$result || !$result['valid']) {
+            pmpro_setMessage(__('Your submission was flagged as suspicious. Please try again.', 'mosparo-integration'), 'pmpro_error');
+            return false;
         }
 
-        // Confirm that all required fields were verified
-        $verifiedFields = array_keys($verificationResult->getVerifiedFields());
-        $fieldDifference = array_diff(array_keys($formData), $verifiedFields);
-
-        if (!$verificationResult->isSubmittable() || !empty($fieldDifference)) {
-            $errors->add(
-                'mosparo_integration_spam_error',
-                __('Verification failed which means the form contains spam.', 'mosparo-integration')
-            );
-        }
-        return $errors;
+        return true;
     }
 }
