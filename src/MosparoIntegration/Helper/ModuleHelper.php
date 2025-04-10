@@ -19,6 +19,7 @@ use MosparoIntegration\Module\WPForms\WPFormsModule;
 use MosparoIntegration\Module\WooCommerceAccount\WooCommerceAccountModule;
 use MosparoIntegration\Module\PaidMembershipsPro\PaidMembershipsProModule; // Add this line
 use MosparoIntegration\Module\BBPress\BBPressModule;
+use MosparoIntegration\Module\BuddyPress\BuddyPressModule;
 
 class ModuleHelper
 {
@@ -40,6 +41,7 @@ class ModuleHelper
         WPFormsModule::class,
         PaidMembershipsProModule::class, // Add this line
         BBPressModule::class,        
+        BuddyPressModule::class,
     ];
     protected $activeModules = [];
 
