@@ -18,7 +18,7 @@ use MosparoIntegration\Module\NinjaForms\NinjaFormsModule;
 use MosparoIntegration\Module\WPForms\WPFormsModule;
 use MosparoIntegration\Module\WooCommerceAccount\WooCommerceAccountModule;
 use MosparoIntegration\Module\PaidMembershipsPro\PaidMembershipsProModule; // Add this line
-use MosparoIntegration\Module\BBPressModule\BBPressModule;
+use MosparoIntegration\Module\BBPress\BBPressModule;
 
 class ModuleHelper
 {
